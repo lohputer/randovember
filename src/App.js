@@ -24,6 +24,31 @@ export default function App() {
               <strong>Include Quotation Marks</strong>
             </label>
             <br />
+            <label className="form-check-label">
+              <input type="checkbox" className="form-check-input" name="quotationr" />
+              <strong>Remove Quotation Marks</strong>
+            </label>
+            <br />
+            <label className="form-check-label">
+              <input type="checkbox" className="form-check-input" name="quotedialogue" />
+              <strong>Consider All Quotations Dialogue</strong>
+            </label>
+            <br />
+            <label className="form-check-label">
+              <input type="checkbox" className="form-check-input" name="boldc" />
+              <strong>Bold Character Titles</strong>
+            </label>
+            <br />
+            <label className="form-check-label">
+              <input type="checkbox" className="form-check-input" name="boldd" />
+              <strong>Bold Dialogue</strong>
+            </label>
+            <br />
+            <label className="form-check-label">
+              <input type="checkbox" className="form-check-input" name="bolds" />
+              <strong>Bold Sentences (besides dialogue)</strong>
+            </label>
+            <br />
           </div>
           <div className="form-group my-3">
             <textarea className="form-control" id="script" rows="3"></textarea>
@@ -33,7 +58,15 @@ export default function App() {
             let newList = [];
             let cooldown = 0;
             let quote = document.getElementsByName("quotations")[0].checked;
+            let boldc = document.getElementsByName("boldc")[0].checked;
+            let boldd = document.getElementsByName("boldd")[0].checked;
+            let bolds = document.getElementsByName("bolds")[0].checked;
+            let quotationr = document.getElementsByName("quotationr")[0].checked;
+            let quotedialogue = document.getElementsByName("quotedialogue")[0].checked;
             for (let i=0; i<text.length; i++) {
+              if (quotedialogue && (text[i].charAt(0) === `"` || text[i].charAt(0) === `“`)) {
+                text[i] = ":" + text[i];
+              }
               if (i !== 0) {
                 if (!text[i-1].includes(":")) {
                   cooldown += 100*(text[i-1].length);
@@ -41,12 +74,18 @@ export default function App() {
                   cooldown += (100*text[i-1].substring(text[i-1].split(":")[0].length, text[i-1].length).length);
                 }
               }
-              console.log(cooldown);
+              if (quotationr) {
+                text[i] = text[i].replace(`"`, '').replace(`“`, '').replace(`”`, '');
+              }
               setTimeout(()=>{
                 let character = text[i].substring(0, text[i].split(":")[0].length);
-                let dialogue = text[i].substring(text[i].split(":")[0].length+1, text[i].length);
+                let dialogue = text[i].substring(text[i].split(":")[0].length, text[i].length);
                 if (text[i].includes(":")) {
-                  newList.push(<p className="text-center text-primary">{character}</p>);
+                  if (boldc) {
+                    newList.push(<p className="text-center text-primary"><strong>{character}</strong></p>);
+                  } else {
+                    newList.push(<p className="text-center text-primary">{character}</p>);
+                  }
                   setContent(
                     <>
                       {newList.map((x)=>
@@ -63,8 +102,14 @@ export default function App() {
                     diag += dialogue.charAt(count);
                     if (quote) {
                       newList[(2*i)+1] = (<p className="text-center">"{diag}"</p>);
+                      if (boldd) {
+                        newList[(2*i)+1] = (<p className="text-center"><strong>"{diag}"</strong></p>);
+                      }
                     } else {
                       newList[(2*i)+1] = (<p className="text-center">{diag}</p>);
+                      if (boldd) {
+                        newList[(2*i)+1] = (<p className="text-center"><strong>{diag}</strong></p>);
+                      }
                     }
                     setContent(
                       <>
@@ -80,15 +125,18 @@ export default function App() {
                     }
                   }, 100);
                 } else {
+                  dialogue = text[i];
                   let count = 0;
                   newList.push("");
                   newList.push(<p className="text-primary text-center"></p>);
-                  dialogue = text[i];
                   let diag = "";
-                  console.log(newList);
                   let interval1 = setInterval(()=>{
                     diag += dialogue.charAt(count);
-                    newList[((2*i)+1)] = (<p className="text-primary text-center">{diag}</p>);
+                    if (bolds) {
+                      newList[((2*i)+1)] = (<p className="text-primary text-center"><strong>{diag}</strong></p>);
+                    } else {
+                      newList[((2*i)+1)] = (<p className="text-primary text-center">{diag}</p>);
+                    }
                     setContent(
                       <>
                         {newList.map((x)=>
@@ -101,7 +149,7 @@ export default function App() {
                     } else {
                       count++;
                     }
-                  }, 100);
+                  }, 100)
                 }
               }, cooldown+(500*i));
             } 
@@ -109,7 +157,9 @@ export default function App() {
         </div>
       : 
         <div className="m-auto p-auto col-10 row">
-          {content}
+          <div className="p-2">
+            {content}
+          </div>
         </div>
       }
     </div>
