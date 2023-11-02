@@ -1,11 +1,10 @@
-
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/scss/bootstrap.scss';
 import "/node_modules/bootstrap/dist/css/bootstrap.css";
 import './custom.scss';
 import { useState } from 'react';
-function App() {
+export default function App() {
   const [ content, setContent ] = useState("");
   var day = new Date().getDate();
   return (
@@ -17,37 +16,37 @@ function App() {
           <p className="col-12 text-center">Type in whatever script you have here and I will help showcase it :D. Do use a new line and a colon to represent new character dialogue just like this:</p>
           <code className="text-center">NPC 1: Hello.</code>
           <code className="text-center">NPC 2: Hello too.</code>
+          <code className="text-center">It was a Thursday when it all happened.</code>
+          <p className="col-12 text-center mt-3">Do tick some options.</p> 
+          <div className="col-12 text-center form-check">
+            <label className="form-check-label">
+              <input type="checkbox" className="form-check-input" name="quotations" />
+              <strong>Include Quotation Marks</strong>
+            </label>
+            <br />
+          </div>
           <div className="form-group my-3">
             <textarea className="form-control" id="script" rows="3"></textarea>
           </div>
           <button className="btn btn-primary col-10" onClick={()=>{
             let text = document.getElementById("script").value.split("\n");
             let newList = [];
+            let cooldown = 0;
+            let quote = document.getElementsByName("quotations")[0].checked;
             for (let i=0; i<text.length; i++) {
-              let cooldown = 0;
               if (i !== 0) {
-                cooldown = 100*text[i].substring(text[i].split(":")[0].length+1, text[i].length).length;
+                if (!text[i-1].includes(":")) {
+                  cooldown += 100*(text[i-1].length);
+                } else {
+                  cooldown += (100*text[i-1].substring(text[i-1].split(":")[0].length, text[i-1].length).length);
+                }
               }
+              console.log(cooldown);
               setTimeout(()=>{
-                console.log(newList);
                 let character = text[i].substring(0, text[i].split(":")[0].length);
                 let dialogue = text[i].substring(text[i].split(":")[0].length+1, text[i].length);
-                newList.push(<p className="text-center text-primary">{character}</p>);
-                setContent(
-                  <>
-                    {newList.map((x)=>
-                      x
-                    )}
-                  </>
-                );
-                console.log(newList);
-                let count = 0;
-                newList.push(<p className="text-center"></p>);
-                let diag = "";
-                console.log(newList);
-                let interval1 = setInterval(()=>{
-                  diag += dialogue.charAt(count);
-                  newList[(2*i)+1] = (<p className="text-center">{diag}</p>);
+                if (text[i].includes(":")) {
+                  newList.push(<p className="text-center text-primary">{character}</p>);
                   setContent(
                     <>
                       {newList.map((x)=>
@@ -55,23 +54,64 @@ function App() {
                       )}
                     </>
                   );
-                  if (count === dialogue.length-1) {
-                    clearInterval(interval1);
-                  } else {
-                    count++;
-                  }
-                }, 100);
-              }, cooldown);
+                  console.log(newList);
+                  let count = 1;
+                  newList.push(<p className="text-center"></p>);
+                  let diag = "";
+                  console.log(newList);
+                  let interval1 = setInterval(()=>{
+                    diag += dialogue.charAt(count);
+                    if (quote) {
+                      newList[(2*i)+1] = (<p className="text-center">"{diag}"</p>);
+                    } else {
+                      newList[(2*i)+1] = (<p className="text-center">{diag}</p>);
+                    }
+                    setContent(
+                      <>
+                        {newList.map((x)=>
+                          x
+                        )}
+                      </>
+                    );
+                    if (count === dialogue.length-1) {
+                      clearInterval(interval1);
+                    } else {
+                      count++;
+                    }
+                  }, 100);
+                } else {
+                  let count = 0;
+                  newList.push("");
+                  newList.push(<p className="text-primary text-center"></p>);
+                  dialogue = text[i];
+                  let diag = "";
+                  console.log(newList);
+                  let interval1 = setInterval(()=>{
+                    diag += dialogue.charAt(count);
+                    newList[((2*i)+1)] = (<p className="text-primary text-center">{diag}</p>);
+                    setContent(
+                      <>
+                        {newList.map((x)=>
+                          x
+                        )}
+                      </>
+                    );
+                    if (count === dialogue.length-1) {
+                      clearInterval(interval1);
+                    } else {
+                      count++;
+                    }
+                  }, 100);
+                }
+              }, cooldown+(500*i));
             } 
           }}>Submit</button>
         </div>
       : 
-        <div className="m-5 col-10 row justify-content-center">
+        <div className="m-auto p-auto col-10 row">
           {content}
         </div>
       }
     </div>
   );
 }
-
-export default App;
